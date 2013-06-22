@@ -14,6 +14,6 @@
     (is (= boston (Locale. "en" "US" "Boston")))))
 
 (deftest read-dict-test
-  (let [dict (read-dict "{#i18n/locale :en {:hi \"Hello\"}}")
+  (let [dict (read-dict "{#clj18n/locale :en {:hi \"Hello\"}}")
         en (Locale. "en")]
     (is (= ((dict en) :hi) "Hello"))))

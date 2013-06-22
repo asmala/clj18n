@@ -17,7 +17,7 @@
   (apply make-locale (split (name nameable) #"[_-]")))
 
 (defmethod print-method java.util.Locale [loc ^java.io.Writer w]
-  (.write w (str "#i18n/locale :" (str loc))))
+  (.write w (str "#clj18n/locale :" (str loc))))
 
 (defmethod print-dup java.util.Locale [loc w]
   (print-method loc w))
@@ -25,4 +25,4 @@
 (defn read-dict
   "Reads a dictionary from an EDN string."
   [s]
-  (edn/read-string {:readers {'i18n/locale #'parse-locale}} s))
+  (edn/read-string {:readers {'clj18n/locale #'parse-locale}} s))
