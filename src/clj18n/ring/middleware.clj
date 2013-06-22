@@ -1,4 +1,5 @@
 (ns clj18n.ring.middleware
+  "Ring middleware for loading dictionaries and setting locales."
   (:require [clj18n.translation :refer [create-t]]))
 
 (defn locale-from-header

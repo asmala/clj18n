@@ -1,4 +1,5 @@
 (ns clj18n.translation
+  "Core translation functionality. The main entry point is create-t."
   (:require [clojure.string :refer [split]]
             [clj18n.reader :refer [make-locale read-dict]]))
 

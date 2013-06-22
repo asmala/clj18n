@@ -1,4 +1,5 @@
 (ns clj18n.reader
+  "EDN reader for dictionaries."
   (:require [clojure.string :refer [split]]
             [clojure.edn :as edn])
   (:import [java.util Locale]))
