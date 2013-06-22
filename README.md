@@ -25,7 +25,7 @@ For other options, please refer to the library
 ## Documentation
 
 You can find examples below and for more extensive documentation you
-can refer to the [API docs](http://asmala.github.com/giddyup).
+can refer to the [API docs](http://asmala.github.io/clj18n).
 
 
 ## Usage
