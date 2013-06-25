@@ -30,14 +30,41 @@ can refer to the [API docs](http://asmala.github.io/clj18n).
 
 ## Usage
 
+
+### Standard dictionary format
+
+Write your dictionary in EDN.
+
 ```clojure
-; Write your dictionary in EDN
 {#clj18n/locale :en
  {:hi "Hello %s"
   :bye "Goodbye"}
  #clj18n/locale :en_US
  {:hi "Howdy %s"}}
+```
 
+
+### Translation closure
+
+Load your translations by locale as a closure from the dictionary.
+
+```clojure
+; Load your dictionary at compile-time.
+(def dict (load-dict "dictionary.edn"))
+
+; Create a closure by locale and dictionary
+(defn run-session
+  [{:keys [locale] :as user}]
+  (let [t (create-t locale dict)]
+    (display-window (t [:title]))))
+```
+
+
+### Ring middleware
+
+Use Ring middleware to integrate Clj18n with your web app.
+
+```clojure
 ; Load the dictionary from the EDN file using Ring middleware.
 (def app
   (-> routes
