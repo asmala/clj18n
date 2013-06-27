@@ -10,7 +10,8 @@ Clojure. For a good Clojure I18n library that supports older versions, please
 see [Tower](https://github.com/ptaoussanis/tower).
 
 
-## Installation
+Installation
+------------
 
 Add the following to your `project.clj`:
 
@@ -22,13 +23,15 @@ For other options, please refer to the library
 [Clojars page](https://clojars.org/clj18n).
 
 
-## Documentation
+Documentation
+-------------
 
 You can find examples below and for more extensive documentation you
 can refer to the [API docs](http://asmala.github.io/clj18n).
 
 
-## Usage
+Usage
+-----
 
 
 ### Standard dictionary format
@@ -42,6 +45,8 @@ Write your dictionary in EDN.
  #clj18n/locale :en_US
  {:hi "Howdy %s"}}
 ```
+
+Clj18n parses the `#clj18n/locale` literals into java.util.Locale instances.
 
 
 ### Translation closure
@@ -73,13 +78,33 @@ Use Ring middleware to integrate Clj18n with your web app.
                  :default :en_US)))
 
 ; Access translations via the translation function bound to :t in the request.
+; Localizations can be accessed via the :fmt key.
 (defn index
-  [{:keys [t]}]
-  (t [:hi] "Jim"))
+  [{:keys [fmt t]}]
+  (t [:hi] "Jim" (fmt (Date.))))
 ```
 
 
-## Contributing
+### Localization
+
+Localization is implemented via the `Localization` protocol which declares one
+method called `localize`. Clj18n comes with default implementations for
+java.util.Date, java.lang.Number, and nil. The method is meant to be called
+via closures created with `create-fmt`.
+
+```clojure
+(let [fmt (create-fmt (Locale. "en" "US"))]
+  (fmt 20000)
+  (fmt 20000 :currency)
+  (fmt (Date.))
+  (fmt (Date.) :date)
+  (fmt (Date.) :date-long)
+  (fmt (Date.) :datetime-full)
+  (fmt (Date.) :time-short))
+```
+
+Contributing
+------------
 
 If you have suggestions for the library, you are welcome to open up a
 [new issue](https://github.com/asmala/clj18n/issues/new). I also
@@ -88,7 +113,8 @@ welcome code contributions, in which case I would recommend a
 with a feature branch.
 
 
-## License
+License
+-------
 
 Copyright © 2013 Janne Asmala
 
