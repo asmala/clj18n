@@ -56,6 +56,20 @@
     ([obj loc] "")
     ([obj loc style] "")))
 
+(defn parse-date
+  "Attempts to parse s as a java.util.Date according to the format indicated by
+  loc and an optional style."
+  ([s loc] (parse-date s loc :date))
+  ([s loc style]
+     (.parse (date-formatter loc style) s)))
+
+(defn parse-number
+  "Attempts to parse s as a java.Util.Number according to the format indicated by
+  loc and an optional style."
+  ([s loc] (parse-number s loc :number))
+  ([s loc style]
+     (.parse (num-formatter loc style) s)))
+
 (defn create-fmt
   "Creates a formatter function for loc."
   [loc]

@@ -25,3 +25,16 @@
 
 (deftest localize-nil-test
   (is (= (fmt nil) "")))
+
+(deftest parse-date-test
+  (let [loc (Locale. "en" "US")
+        formatter (DateFormat/getDateInstance DateFormat/SHORT loc)
+        date (.parse formatter "6/22/2013")]
+    (is (= date (parse-date "Jun 22, 2013" loc)))
+    (is (= date (parse-date "Jun 22, 2013 12:00:00 AM" loc :datetime-medium)))))
+
+(deftest parse-number-test
+  (let [loc (Locale. "en" "US")]
+    (is (= 2 (parse-number "2" loc)))
+    (is (= 0.8 (parse-number "80.0%" loc :percentage)))
+    (is (= 0.8 (parse-number "$0.80" loc :currency)))))
