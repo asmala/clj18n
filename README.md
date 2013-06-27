@@ -5,6 +5,9 @@ Clj18n is a simple Clojure internationalization library aiming to for simplicity
 in the [Hicksian meaning](http://www.infoq.com/presentations/Simple-Made-Easy)
 of the term.
 
+For another take on Clojure internatlization, and the original inspiration for
+Clj18n, also check out [Tower](https://github.com/ptaoussanis/tower).
+
 
 Installation
 ------------
