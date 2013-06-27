@@ -16,7 +16,7 @@ Installation
 Add the following to your `project.clj`:
 
 ```clojure
-[clj18n "0.1.0"]
+[clj18n "0.2.0"]
 ```
 
 For other options, please refer to the library
