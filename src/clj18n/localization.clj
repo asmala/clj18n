@@ -63,10 +63,10 @@
   ([s loc style]
      (.parse (date-formatter loc style) s)))
 
-(defn parse-number
+(defn parse-num
   "Attempts to parse s as a java.Util.Number according to the format indicated by
   loc and an optional style."
-  ([s loc] (parse-number s loc :number))
+  ([s loc] (parse-num s loc :number))
   ([s loc style]
      (.parse (num-formatter loc style) s)))
 
