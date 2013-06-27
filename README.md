@@ -5,10 +5,6 @@ Clj18n is a simple Clojure internationalization library aiming to for simplicity
 in the [Hicksian meaning](http://www.infoq.com/presentations/Simple-Made-Easy)
 of the term.
 
-Note that Clj18n does not attempt to be compatible with older versions of
-Clojure. For a good Clojure I18n library that supports older versions, please
-see [Tower](https://github.com/ptaoussanis/tower).
-
 
 Installation
 ------------
@@ -16,7 +12,7 @@ Installation
 Add the following to your `project.clj`:
 
 ```clojure
-[clj18n "0.2.0"]
+[clj18n "0.2.1"]
 ```
 
 For other options, please refer to the library
