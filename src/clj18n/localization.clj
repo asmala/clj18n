@@ -1,4 +1,6 @@
 (ns clj18n.localization
+  "Localization functionality implemented via the Localization protocol and
+  closures created by create-fmt."
   (:require [clojure.string :refer [split]])
   (:import [java.lang Number]
            [java.text DateFormat NumberFormat]
