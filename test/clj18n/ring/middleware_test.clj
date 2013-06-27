@@ -37,13 +37,20 @@
                 (wrap-translation {:en {:hi "Hello"}}))
         resp (app {:clj18n.ring.middleware/locale :en})
         t (resp :t)]
-    (is (= (t [:hi])
-           "Hello"))))
+    (is (= (t [:hi]) "Hello"))))
+
+(deftest wrap-localization-test
+  (let [app (wrap-localization identity)
+        resp (app {:clj18n.ring.middleware/locale (Locale. "en" "US")})
+        fmt (resp :fmt)]
+    (is (= (fmt 200 :currency) "$200.00"))))
 
 (deftest wrap-i18n-test
   (let [app (-> identity
                 (wrap-i18n {(Locale. "fi") {:hi "Terve"}}
                            :default (Locale. "fi")))
         resp (app {})
-        t (resp :t)]
-    (is (= (t [:hi]) "Terve"))))
+        t (resp :t)
+        fmt (resp :fmt)]
+    (is (= (t [:hi]) "Terve"))
+    (is (= (fmt 89.4) "89,4"))))

@@ -1,6 +1,7 @@
 (ns clj18n.ring.middleware
   "Ring middleware for loading dictionaries and setting locales."
-  (:require [clj18n.translation :refer [create-t]]))
+  (:require [clj18n.localization :refer [create-fmt]]
+            [clj18n.translation :refer [create-t]]))
 
 (defn locale-from-header
   "Gets the locale from the request Accept-Language header."
@@ -41,7 +42,17 @@
   (fn [req]
     (app (assoc req :t (create-t (req ::locale) dict)))))
 
+(defn wrap-localization
+  "Based on the request ::locale, sets request :fmt to be a localization
+  function for the locale"
+  [app]
+  (fn [req]
+    (app (assoc req :fmt (create-fmt (req ::locale))))))
+
 (defn wrap-i18n
   "Calls both wrap-locale and wrap-translation with the given arguments."
   [app dict & args]
-  (apply wrap-locale (wrap-translation app dict) args))
+  (let [app (-> app
+                (wrap-translation dict)
+                wrap-localization)]
+    (apply wrap-locale app  args)))

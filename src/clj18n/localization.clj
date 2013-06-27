@@ -19,6 +19,7 @@
    :full    DateFormat/FULL})
 
 (defn- date-formatter
+  "Returns a date formatter corresponding to the arguments."
   [loc style]
   (let [[type length] (map keyword (split (name style) #"-"))
         format (time-format (or length :default))]
@@ -29,8 +30,9 @@
       :time (DateFormat/getTimeInstance format loc))))
 
 (defn- num-formatter
-  [loc type]
-  (case type
+  "Returns a number formatter corresponding to the arguments."
+  [loc style]
+  (case style
     :number (NumberFormat/getNumberInstance loc)
     :integer (NumberFormat/getIntegerInstance loc)
     :percentage (NumberFormat/getPercentInstance loc)
