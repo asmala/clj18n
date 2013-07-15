@@ -1,12 +1,9 @@
 Clj18n: Simple Clojure Internationalization [![Build Status](https://secure.travis-ci.org/asmala/clj18n.png?branch=master)](http://travis-ci.org/asmala/clj18n)
 ===========================================
 
-Clj18n is a simple Clojure internationalization library aiming to for simplicity
-in the [Hicksian meaning](http://www.infoq.com/presentations/Simple-Made-Easy)
-of the term.
-
-For another take on Clojure internatlization, and the original inspiration for
-Clj18n, also check out [Tower](https://github.com/ptaoussanis/tower).
+A playground for Clojure internationalization. While the library is fairly
+complete, most users will likely be better served by the more mature
+[Tower](https://github.com/ptaoussanis/tower).
 
 
 Installation
@@ -95,6 +92,7 @@ java.util.Date, java.lang.Number, and nil.
 
 
 ```clojure
+; Format dates and numbers as strings.
 (with-locale :fi
   (fmt 20000)
   (fmt 20000 :currency)
@@ -104,6 +102,7 @@ java.util.Date, java.lang.Number, and nil.
   (fmt (Date.) :datetime-full)
   (fmt (Date.) :time-short))
 
+; Parse strings and sort collections.
 (with-locale :fi
   (parse-date date-string)
   (parse-num (params :total) :currency)
