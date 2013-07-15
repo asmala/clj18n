@@ -1,5 +1,6 @@
 (ns clj18n.ring.middleware-test
-  (:require [clojure.test :refer :all]
+  (:require [clj18n :refer [with-locale]]
+            [clojure.test :refer :all]
             [clj18n.ring.middleware :refer :all])
   (:import [java.util Locale]))
 
@@ -17,40 +18,28 @@
 
 (deftest locale-from-domain-test
   (is (= (locale-from-domain {:server-name "en.example.com"})
-         "en")))
+         "en"))
+  (is (nil? (locale-from-domain {:server-name "www.example.com"})))
+  (is (nil? (locale-from-domain {:server-name "tt.co"}))))
 
 (deftest wrap-locale-test
-  (let [app (-> identity
+  (let [app (-> (fn [_] (clj18n/locale))
                 (wrap-locale :locale-fns [(constantly nil)
-                                          (constantly "en-US")
-                                          (constantly "en")]))]
-    (is (= (app {})
-           {:clj18n.ring.middleware/locale "en-US"})))
-  (let [app (-> identity
+                                          (constantly "fi-FI")
+                                          (constantly "fi")]))]
+    (is (= (Locale. "fi" "FI") (app {}))))
+  (let [app (-> (fn [_] (clj18n/locale))
                 (wrap-locale :locale-fns [(constantly nil)]
                              :default "fi-FI"))]
-    (is (= (app {})
-           {:clj18n.ring.middleware/locale "fi-FI"}))))
+    (is (= (Locale. "fi" "FI") (app {})))))
 
 (deftest wrap-translation-test
-  (let [app (-> identity
-                (wrap-translation {:en {:hi "Hello"}}))
-        resp (app {:clj18n.ring.middleware/locale :en})
-        t (resp :t)]
-    (is (= (t [:hi]) "Hello"))))
-
-(deftest wrap-localization-test
-  (let [app (wrap-localization identity)
-        resp (app {:clj18n.ring.middleware/locale (Locale. "en" "US")})
-        fmt (resp :fmt)]
-    (is (= (fmt 200 :currency) "$200.00"))))
+  (let [app (-> (fn [{:keys [t]}] (t [:hi]))
+                (wrap-translation {(Locale. "fi") {:hi "Terve"}}))]
+    (is (= "Terve" (with-locale :fi (app {}))))))
 
 (deftest wrap-i18n-test
-  (let [app (-> identity
+  (let [app (-> (fn [{:keys [t]}] (t [:hi]))
                 (wrap-i18n {(Locale. "fi") {:hi "Terve"}}
-                           :default (Locale. "fi")))
-        resp (app {})
-        t (resp :t)
-        fmt (resp :fmt)]
-    (is (= (t [:hi]) "Terve"))
-    (is (= (fmt 89.4) "89,4"))))
+                           :default (Locale. "fi")))]
+    (is (= "Terve" (app {})))))

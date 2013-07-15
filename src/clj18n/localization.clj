@@ -1,17 +1,11 @@
 (ns clj18n.localization
   "Localization functionality implemented via the Localization protocol and
-  closures created by create-fmt."
-  (:require [clojure.string :refer [split]])
+  various helper functions."
+  (:require [clj18n]
+            [clojure.string :refer [split]])
   (:import [java.lang Number]
-           [java.text DateFormat NumberFormat]
+           [java.text Collator DateFormat NumberFormat]
            [java.util Date]))
-
-(defprotocol Localization
-  "Localized formatting for objects."
-  (localize [obj loc] [obj loc style]
-    "Returns a localized string corresponding to obj. Can optionally be given
-    a style to control how the object is formatted. Normally used via
-    functions returned by create-fmt."))
 
 (def ^:private time-format
   {:default DateFormat/DEFAULT
@@ -22,57 +16,67 @@
 
 (defn- date-formatter
   "Returns a date formatter corresponding to the arguments."
-  [loc style]
+  [style]
   (let [[type length] (map keyword (split (name style) #"-"))
         format (time-format (or length :default))]
     (case type
-      :date (DateFormat/getDateInstance format loc)
+      :date (DateFormat/getDateInstance format (clj18n/locale))
       :datetime (DateFormat/getDateTimeInstance
-                  format format loc)
-      :time (DateFormat/getTimeInstance format loc))))
+                 format format (clj18n/locale))
+      :time (DateFormat/getTimeInstance format (clj18n/locale)))))
 
 (defn- num-formatter
   "Returns a number formatter corresponding to the arguments."
-  [loc style]
+  [style]
   (case style
-    :number (NumberFormat/getNumberInstance loc)
-    :integer (NumberFormat/getIntegerInstance loc)
-    :percentage (NumberFormat/getPercentInstance loc)
-    :currency (NumberFormat/getCurrencyInstance loc)))
+    :number (NumberFormat/getNumberInstance (clj18n/locale))
+    :integer (NumberFormat/getIntegerInstance (clj18n/locale))
+    :percentage (NumberFormat/getPercentInstance (clj18n/locale))
+    :currency (NumberFormat/getCurrencyInstance (clj18n/locale))))
+
+(defprotocol Localization
+  "Localized formatting for objects."
+  (fmt [obj] [obj style]
+    "Returns a localized string corresponding to obj. Can optionally be given
+    a style to control how the object is formatted."))
 
 (extend-protocol Localization
   Date
-  (localize
-    ([date loc] (localize date loc :date))
-    ([date loc style]
-       (.format (date-formatter loc style) date)))
+  (fmt
+    ([date] (fmt date :date))
+    ([date style]
+       (.format (date-formatter style) date)))
   Number
-  (localize
-    ([n loc] (localize n loc :number))
-    ([n loc style]
-       (.format (num-formatter loc style) n)))
+  (fmt
+    ([n] (fmt n :number))
+    ([n style]
+       (.format (num-formatter style) n)))
   nil
-  (localize
-    ([obj loc] "")
-    ([obj loc style] "")))
+  (fmt
+    ([obj] "")
+    ([obj style] "")))
 
 (defn parse-date
   "Attempts to parse s as a java.util.Date according to the format indicated by
-  loc and an optional style."
-  ([s loc] (parse-date s loc :date))
-  ([s loc style]
-     (.parse (date-formatter loc style) s)))
+  the current locale and an optional style."
+  ([s] (parse-date s :date))
+  ([s style]
+     (.parse (date-formatter style) s)))
 
 (defn parse-num
   "Attempts to parse s as a java.Util.Number according to the format indicated by
-  loc and an optional style."
-  ([s loc] (parse-num s loc :number))
-  ([s loc style]
-     (.parse (num-formatter loc style) s)))
+  by the current locale and an optional style."
+  ([s] (parse-num s :number))
+  ([s style]
+     (.parse (num-formatter style) s)))
 
-(defn create-fmt
-  "Creates a formatter function for loc."
-  [loc]
-  (fn
-    ([obj] (localize obj loc))
-    ([obj style] (localize obj loc style))))
+(defn loc-comparator
+  "Returns a localized Unicode comparator."
+  []
+  (let [collator (Collator/getInstance (clj18n/locale))]
+    (fn [x y] (.compare collator x y))))
+
+(defn loc-sort
+  "Sorts the collection using a localized Unicode comparator."
+  [coll]
+  (sort (loc-comparator) coll))

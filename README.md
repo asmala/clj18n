@@ -15,7 +15,7 @@ Installation
 Add the following to your `project.clj`:
 
 ```clojure
-[clj18n "0.2.1"]
+[clj18n "0.3.0"]
 ```
 
 For other options, please refer to the library
@@ -48,19 +48,21 @@ Write your dictionary in EDN.
 Clj18n parses the `#clj18n/locale` literals into java.util.Locale instances.
 
 
-### Translation closure
+### Translation
 
-Load your translations by locale as a closure from the dictionary.
+Access translations directly or create a closure around the dictionary.
 
 ```clojure
 ; Load your dictionary at compile-time.
 (def dict (load-dict "dictionary.edn"))
 
-; Create a closure by locale and dictionary
-(defn run-session
-  [{:keys [locale] :as user}]
-  (let [t (create-t locale dict)]
-    (display-window (t [:title]))))
+; User string interpolation
+(translate dict [:front-page :logged-in] "Joe")
+
+; Use a closure and control locale using with-locale
+(let [t (partial translate dict)]
+  (with-locale :fi
+    (t [:front-page :title])))
 ```
 
 
@@ -70,29 +72,30 @@ Use Ring middleware to integrate Clj18n with your web app.
 
 ```clojure
 ; Load the dictionary from the EDN file using Ring middleware.
+; Set locale based on :locale-fns and :default.
 (def app
   (-> routes
       compojure.handler/site
       (wrap-i18n (load-dict "dictionary.edn")
+                 :locale-fns [locale-from-session]
                  :default :en_US)))
 
-; Access translations via the translation function bound to :t in the request.
-; Localizations can be accessed via the :fmt key.
+; Access translations via the translation closure bound to :t in the request.
 (defn index
-  [{:keys [fmt t]}]
-  (t [:hi] "Jim" (fmt (Date.))))
+  [{:keys [t]}]
+  (t [:hi] "Jim"))
 ```
 
 
 ### Localization
 
 Localization is implemented via the `Localization` protocol which declares one
-method called `localize`. Clj18n comes with default implementations for
-java.util.Date, java.lang.Number, and nil. The method is meant to be called
-via closures created with `create-fmt`.
+method called `fmt`. Clj18n comes with default implementations for
+java.util.Date, java.lang.Number, and nil.
+
 
 ```clojure
-(let [fmt (create-fmt (Locale. "en" "US"))]
+(with-locale :fi
   (fmt 20000)
   (fmt 20000 :currency)
   (fmt (Date.))
@@ -100,6 +103,11 @@ via closures created with `create-fmt`.
   (fmt (Date.) :date-long)
   (fmt (Date.) :datetime-full)
   (fmt (Date.) :time-short))
+
+(with-locale :fi
+  (parse-date date-string)
+  (parse-num (params :total) :currency)
+  (loc-sort ["Köyliö" "Kuopio"]))
 ```
 
 Contributing

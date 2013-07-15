@@ -1,4 +1,4 @@
-(defproject clj18n "0.2.1"
+(defproject clj18n "0.3.0"
   :description "Simple Clojure internationalization library."
   :url "https://github.com/asmala/clj18n"
   :license {:name "Eclipse Public License"

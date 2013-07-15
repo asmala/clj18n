@@ -3,17 +3,17 @@
             [clj18n.reader :refer :all])
   (:import [java.util Locale]))
 
-(deftest make-locale-test
-  (is (= (make-locale "en" "US")
-         (Locale. "en" "US"))))
-
-(deftest parse-locale-test
-  (let [english (parse-locale "en")
-        boston (parse-locale :en_US_Boston)]
-    (is (= english (Locale. "en")))
-    (is (= boston (Locale. "en" "US" "Boston")))))
-
 (deftest read-dict-test
   (let [dict (read-dict "{#clj18n/locale :en {:hi \"Hello\"}}")
         en (Locale. "en")]
     (is (= ((dict en) :hi) "Hello"))))
+
+(def dict {(Locale. "en") {:hi "Hello" :hi-with-name "Hello, %s" :bye "Goodbye"}
+           (Locale. "en" "US") {:hi "Howdy"}})
+
+(deftest expand-dict-test
+  (let [dict (expand-dict dict)]
+    (is (= "Hello"
+           ((dict (Locale. "en")) :hi)))
+    (is (= "Goodbye"
+           ((dict (Locale. "en" "US")) :bye)))))

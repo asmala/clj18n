@@ -1,7 +1,7 @@
 (ns clj18n.ring.middleware
   "Ring middleware for loading dictionaries and setting locales."
-  (:require [clj18n.localization :refer [create-fmt]]
-            [clj18n.translation :refer [create-t]]))
+  (:require [clj18n :refer [with-locale]]
+            [clj18n.translation :refer [translate]]))
 
 (defn locale-from-header
   "Gets the locale from the request Accept-Language header."
@@ -14,7 +14,7 @@
   (when params (params :locale)))
 
 (defn locale-from-uri
-  "Gets the locale from the request uri,  using the first part of the URI as the
+  "Gets the locale from the request uri, using the first part of the URI as the
   locale."
   [{:keys [uri] :as req}]
   (last (re-find #"^/([^/]+)" uri)))
@@ -26,33 +26,24 @@
   (last (re-find  #"^([^\.]{2})\..+\..+" server-name)))
 
 (defn wrap-locale
-  "Sets request ::locale to the first value returned by :locale-fns or to
-  :default. :locale-fns are functions that take the request as argument and
-  return a locale string or nil."
+  "Wraps app in a clj18n/with-locale call, with locale bound to the first value
+  returned by :locale-fns or to :default. :locale-fns are functions that take
+  the request as argument and return a locale string or nil."
   [app & {:keys [default locale-fns]
-          :or {default :en locale-fns [locale-from-header locale-from-param]}}]
+          :or {locale-fns [locale-from-header locale-from-param]}}]
   (fn [req]
     (let [loc (first (filter boolean (map #(% req) locale-fns)))]
-      (app (assoc req ::locale (or loc default))))))
+      (with-locale (or loc default)
+        (app req)))))
 
 (defn wrap-translation
-  "Based on the request ::locale, sets request :t to be a function of
-  translations for the locale."
+  "Sets request :t to be a function of translations for dict."
   [app dict]
-  (fn [req]
-    (app (assoc req :t (create-t (req ::locale) dict)))))
-
-(defn wrap-localization
-  "Based on the request ::locale, sets request :fmt to be a localization
-  function for the locale"
-  [app]
-  (fn [req]
-    (app (assoc req :fmt (create-fmt (req ::locale))))))
+  (let [t (partial translate dict)]
+    (fn [req]
+      (app (assoc req :t t)))))
 
 (defn wrap-i18n
   "Calls both wrap-locale and wrap-translation with the given arguments."
   [app dict & args]
-  (let [app (-> app
-                (wrap-translation dict)
-                wrap-localization)]
-    (apply wrap-locale app  args)))
+  (apply wrap-locale (wrap-translation app dict) args))
