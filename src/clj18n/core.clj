@@ -1,8 +1,8 @@
-(ns clj18n
+(ns clj18n.core
   (:require [clojure.string :as string])
   (:import [java.util Locale]))
 
-(defn make-locale
+(defn- make-locale
   "Creates a Java Locale object with a lowercase ISO-639 language code,
   optional uppercase ISO-3166 country code, and optional vendor-specific
   variant code."
@@ -18,20 +18,11 @@
 (extend-protocol LocaleConversion
   Locale
   (to-locale [loc] loc)
+  clojure.lang.PersistentVector
+  (to-locale [v] (apply make-locale v))
+  clojure.lang.ASeq
+  (to-locale [coll] (apply make-locale coll))
   String
-  (to-locale [s] (apply make-locale (string/split s #"[_-]")))
+  (to-locale [s] (to-locale (string/split s #"[_-]")))
   clojure.lang.Keyword
   (to-locale [k] (to-locale (name k))))
-
-(def ^{:dynamic true :private true} *locale* nil)
-
-(defn locale
-  "Returns the current locale."
-  []
-  (or *locale* (Locale/getDefault)))
-
-(defmacro with-locale
-  "Executes body within the context of thread-local locale binding, enabling
-  use of translation and localization functions. loc can be a java.util.Locale
-  or a keyword of the form :en, :en-US, or :en-US-variant."
-  [loc & body] `(binding [*locale* (to-locale ~loc)] ~@body))

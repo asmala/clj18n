@@ -1,6 +1,6 @@
 (ns clj18n.ring.middleware
   "Ring middleware for loading dictionaries and setting locales."
-  (:require [clj18n :refer [with-locale]]
+  (:require [clj18n.core :refer [to-locale]]
             [clj18n.translation :refer [translate]]))
 
 (defn locale-from-header
@@ -26,21 +26,22 @@
   (last (re-find  #"^([^\.]{2})\..+\..+" server-name)))
 
 (defn wrap-locale
-  "Wraps app in a clj18n/with-locale call, with locale bound to the first value
-  returned by :locale-fns or to :default. :locale-fns are functions that take
-  the request as argument and return a locale string or nil."
+  "Sets request :locale to the first value returned by :locale-fns or to
+  :default. :locale-fns are functions that take the request as argument and
+  return a locale string or nil."
   [app & {:keys [default locale-fns]
-          :or {locale-fns [locale-from-header locale-from-param]}}]
-  (fn [req]
-    (let [loc (first (filter boolean (map #(% req) locale-fns)))]
-      (with-locale (or loc default)
-        (app req)))))
+          :or {default :en locale-fns [locale-from-header locale-from-param]}}]
+  (let [loc-str-fn (apply some-fn locale-fns)]
+    (fn [req]
+      (let [loc-str (or (loc-str-fn req) default)]
+        (app (assoc req :locale (to-locale loc-str)))))))
 
 (defn wrap-translation
-  "Sets request :t to be a function of translations for dict."
+  "Sets request :t to be a function of translations for dict and request
+  :locale."
   [app dict]
-  (let [t (partial translate dict)]
-    (fn [req]
+  (fn [{:keys [locale] :as req}]
+    (let [t (partial translate dict locale)]
       (app (assoc req :t t)))))
 
 (defn wrap-i18n

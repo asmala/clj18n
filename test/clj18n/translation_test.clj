@@ -1,6 +1,5 @@
 (ns clj18n.translation-test
   (:require [clojure.test :refer :all]
-            [clj18n :refer [with-locale]]
             [clj18n.translation :refer :all])
   (:import [java.util Locale]))
 
@@ -9,6 +8,6 @@
 
 (deftest translate-test
   (is (= "Howdy"
-         (with-locale :en-US (translate dict [:hi]))))
+         (translate dict (Locale. "en" "US") [:hi])))
   (is (= "Hello, Janne"
-         (with-locale :en (translate dict [:hi-with-name] "Janne")))))
+         (translate dict (Locale. "en") [:hi-with-name] "Janne"))))

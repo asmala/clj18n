@@ -1,6 +1,5 @@
 (ns clj18n.ring.middleware-test
-  (:require [clj18n :refer [with-locale]]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer :all]
             [clj18n.ring.middleware :refer :all])
   (:import [java.util Locale]))
 
@@ -23,23 +22,29 @@
   (is (nil? (locale-from-domain {:server-name "tt.co"}))))
 
 (deftest wrap-locale-test
-  (let [app (-> (fn [_] (clj18n/locale))
+  (let [app (-> identity
                 (wrap-locale :locale-fns [(constantly nil)
-                                          (constantly "fi-FI")
-                                          (constantly "fi")]))]
-    (is (= (Locale. "fi" "FI") (app {}))))
-  (let [app (-> (fn [_] (clj18n/locale))
+                                          (constantly "en-US")
+                                          (constantly "en")]))]
+    (is (= (app {})
+           {:locale (Locale. "en" "US")})))
+  (let [app (-> identity
                 (wrap-locale :locale-fns [(constantly nil)]
                              :default "fi-FI"))]
-    (is (= (Locale. "fi" "FI") (app {})))))
+    (is (= (app {})
+           {:locale (Locale. "fi" "FI")}))))
 
 (deftest wrap-translation-test
-  (let [app (-> (fn [{:keys [t]}] (t [:hi]))
-                (wrap-translation {(Locale. "fi") {:hi "Terve"}}))]
-    (is (= "Terve" (with-locale :fi (app {}))))))
+  (let [app (-> identity
+                (wrap-translation {:en {:hi "Hello"}}))
+        resp (app {:locale :en})
+        t (resp :t)]
+    (is (= (t [:hi]) "Hello"))))
 
 (deftest wrap-i18n-test
-  (let [app (-> (fn [{:keys [t]}] (t [:hi]))
+  (let [app (-> identity
                 (wrap-i18n {(Locale. "fi") {:hi "Terve"}}
-                           :default (Locale. "fi")))]
-    (is (= "Terve" (app {})))))
+                           :default (Locale. "fi")))
+        resp (app {})
+        t (resp :t)]
+    (is (= (t [:hi]) "Terve"))))
